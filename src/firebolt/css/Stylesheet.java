@@ -42,4 +42,20 @@ public class Stylesheet {
 		
 		return CSSString;
 	}
+	
+	/**
+	 * STATIC HELPERS
+	 */
+	
+	/**
+	 * Changes a pixels based measurement to it's integer value
+	 * 
+	 * @param px the dimension in px in a String
+	 * 
+	 * @return the size in integer
+	 */
+	public static int pixelsToInt(String px)
+	{
+		return Integer.parseInt(px.substring(0, px.length( ) - 2));
+	}
 }

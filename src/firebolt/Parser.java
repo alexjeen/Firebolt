@@ -2,6 +2,7 @@ package firebolt;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.regex.*;
 import psd.model.*;
@@ -20,6 +21,11 @@ public class Parser {
 	private File psd_file;
 	
 	/**
+	 * The folder to the output
+	 */
+	private String output;
+	
+	/**
 	 * Holds the document
 	 */
 	private Document document;
@@ -30,7 +36,7 @@ public class Parser {
 	 * @param path path to the psd file that adheres to the specification
 	 * @throws Exception 
 	 */
-	public Parser(String path) throws Exception
+	public Parser(String path, String output) throws Exception
 	{
 		psd_file = new File(path);
 		
@@ -61,7 +67,14 @@ public class Parser {
 		
 		body.recursiveBuildStyle();
 		
-		BufferedWriter html = new BufferedWriter(new FileWriter("/Users/Alex/Documents/eclipse_workspace/Firebolt/html/index.html"));
+		// check for trailing slash
+		if(output.charAt(output.length() - 1) != '/') {
+			output += "/";
+		}
+		
+		this.output = output;
+		
+		BufferedWriter html = new BufferedWriter(new FileWriter(output + "index.html"));
 		
 		html.write(document.print());
 		
@@ -79,6 +92,7 @@ public class Parser {
 	{
 		// parent of current layer
 		Element e = parseLayer(l);
+		LinkedList<Element> children = new LinkedList<Element>();
 		
 		document.addCSSLine(e.getSelector());
 		for(int x = 0; x < l.getLayersCount(); x++)
@@ -92,7 +106,20 @@ public class Parser {
 			if(l.getType() == LayerType.FOLDER && cL.getType() == LayerType.NORMAL && cL.toString().equals(l.toString())) {
 				e.merge(c);
 			}
-		}		
+			else {
+				children.add(c);
+			}
+		}	
+		
+		// iterate the siblings
+		for(Element parentChild : children)
+		{
+			for(Element childChild : children)
+			{
+				parentChild.addSibling(childChild);
+			}
+		}
+		
 		return e;
 	}
 	
@@ -129,7 +156,7 @@ public class Parser {
 		// match 1 = tagname
 		// match 2 = id
 		// match 3 = attributes
-		String layerRegex = "^(<[a-z^>]*>)?([a-z]*)?(\\[.*\\])?$";
+		String layerRegex = "^(<[a-z^>]*>)?([a-z\\-\\_]*)?(\\[.*\\])?$";
 		String layerName = layer.toString();
 		
 		String tag = "";
@@ -165,6 +192,16 @@ public class Parser {
 		
 		// parsing done, create the Element
 		return new Element(tag, id, attributes, layer);
+	}
+	
+	/**
+	 * Gets the output folder
+	 * 
+	 * @return the output folder including a trailing slash
+	 */
+	public String getOutput()
+	{
+		return output;
 	}
 	
 }

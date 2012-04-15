@@ -6,8 +6,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import psd.model.Layer;
 import psd.parser.layer.LayerType;
+import firebolt.css.Stylesheet;
 import firebolt.css.StylesheetSelector;
-import metadata.MetaDataParser;
+import firebolt.metadata.MetadataParser;
 
 /**
  * The Element class basically holds every HTML element
@@ -46,6 +47,11 @@ public class Element {
 	private LinkedList<Element> children;
 	
 	/**
+	 * Siblings of the element, index == flow order
+	 */
+	private LinkedList<Element> siblings;
+	
+	/**
 	 * Create a new element
 	 * 
 	 * @param tagname
@@ -55,6 +61,7 @@ public class Element {
 	public Element(String tagname, String id, HashMap<String,String>attr, Layer l)
 	{
 		children = new LinkedList<Element>();
+		siblings = new LinkedList<Element>();
 		tag = tagname;
 		layer = l;
 		if(id.length() > 0) {
@@ -64,10 +71,7 @@ public class Element {
 		else {
 			css = new StylesheetSelector(tagname);
 		}
-		
-		new MetaDataParser(this, attr);
-		
-		
+		new MetadataParser(this, attr);
 	}
 	
 	/**
@@ -153,44 +157,119 @@ public class Element {
 				css.addProperty("margin-right", "auto");
 			}
 			
-			if((y - yp) > 0) {
+			// calculate next and previous in flow elements
+			Element nif = getNextInFlow();
+			Element pif = getPrevInFlow();
+
+			StylesheetSelector parentSelector = parent.getSelector();
+			
+			if((y - yp) > 0 && pif == null) {
 				// @TODO: according to the box model, the height should decrease - padding
-				StylesheetSelector parentSelector = parent.getSelector();
 				parentSelector.addProperty("padding-top", (y - yp) + "px");
+				if(parentSelector.getProperty("height") != null) {
+					int newHeight = Stylesheet.pixelsToInt(parentSelector.getProperty("height")) - (y - yp);
+					parentSelector.addProperty("height", newHeight + "px");
+				}
+			}
+			
+			if(pif == null) {
+				// check for the left margin of this element (judging by it's parent)
+				
 			}
 			
 			// check for margin top of this element
-			Element nif = getNextInFlow();
-			
 			if(nif != null) {
 				Layer nifL = nif.getLayer();
 				if((nifL.getY() - yb) > 0) {
 					nif.getSelector().addProperty("margin-top", (nifL.getY() - yb) + "px");
 				}
 			}
+			
+			// calculate floats (http://www.w3schools.com/cssref/pr_class_float.asp)
+			// a float occurs when this element has a sibling are on the same "level"
+			if(nif != null || pif != null) {
+				if(nif != null)
+				{
+					int nif_x = nif.getLayer().getX();
+					
+					// get the ranges for the Y axis of the next in flow element..
+					int nif_y = nif.getLayer().getY();
+					
+					if(nif_y == y) {
+						// @TODO: more complex comparison for parallel Y elements..
+						css.addProperty("float", "left");
+						nif.getSelector().addProperty("float", "left");
+						
+						if((nif_x - xr) > 0) {
+							css.addProperty("margin-right", (nif_x - xr) + "px");
+						}
+					}
+				}
+				if(pif != null)
+				{
+					
+				}
+			}
+			
 		}
 	
+		for(Class<Heuristic> heur : Heuristic.getHeuristics())
+		{
+			try 
+			{
+				Heuristic heuristic = heur.newInstance();
+				heuristic.changeElement(this);
+			} 
+			catch (InstantiationException e) 
+			{
+				System.out.println("Couldn't initiate Heuristic: " + e.getMessage());
+			} 
+			catch (IllegalAccessException e) 
+			{
+				System.out.println("Couldn't access Heuristic: " + e.getMessage());
+			}
+		}
+		
 	}
 	
 	/**
 	 * Gets the next element in the flow
 	 * 
 	 * @see http://explainth.at/en/css/flow.shtml
-	 * @return element prev in flow, otherwise null
+	 * @return element next in flow, otherwise null
 	 */	
 	public Element getNextInFlow()
 	{
-		if(!hasParent()) { return null; } 
+		int thisIndex = siblings.indexOf(this);
 		
-		LinkedList<Element> parentChildren = parent.getChildren();
-		int thisIndex = parentChildren.indexOf(this);
-		
-		if((thisIndex - 1) >= 0) {
-			return parentChildren.get(thisIndex - 1);
-		}
-		else {
+		if(thisIndex == 0) {
+			// this is the first element..
 			return null;
 		}
+		else {
+			return siblings.get(thisIndex - 1);
+		}
+	}
+	
+	/**
+	 * Gets the prev element in the flow
+	 * 
+	 * @see http://explainth.at/en/css/flow.shtml
+	 * @return element prev in flow, otherwise null
+	 */		
+	public Element getPrevInFlow()
+	{
+		int thisIndex = siblings.indexOf(this);
+		int siblingsSize = siblings.size();
+		
+		if((thisIndex + 1) == siblingsSize || siblingsSize == 1) {
+			// this is the last element, so it has no next
+			return null;
+		}
+		else {
+			// there must be a next
+			return siblings.get(thisIndex + 1);
+		}		
 	}
 	
 	/**
@@ -303,9 +382,9 @@ public class Element {
 	 */
 	public String printRecursive(int level, String appendFirst, String appendLast)
 	{
-		/*if(tag.length() == 0) {
+		if(tag.length() == 0) {
 			return "";
-		}*/
+		}
 		
 		String HTML = "<"+tag;
 		String indentation = "";
@@ -333,6 +412,16 @@ public class Element {
 		HTML += indentation + "</"+tag+">"+buildAppend(appendLast)+"\n";
 		
 		return HTML;
+	}
+	
+	/**
+	 * Adds a sibling to this element
+	 * 
+	 * @param e the sibling
+	 */
+	public void addSibling(Element e)
+	{
+		siblings.add(e);
 	}
 	
 	/**

@@ -13,18 +13,24 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(args.length == 0) {
-			System.out.println("Usage: firebolt design.psd");
-		}
 		
+		long start = System.currentTimeMillis();
+		
+		if(args.length <= 1) {
+			System.out.println("Usage: firebolt path/to/design.psd /path/to/output_folder");
+			System.exit(0);
+		}
+
 		try
 		{
-			new Parser(args[0]);
+			Parser p = new Parser(args[0], args[1]);
+			long end = System.currentTimeMillis();
+			System.out.println("Parsed Photoshop file in " + (end - start) + " ms..\nOutput is in " + p.getOutput());
+			System.exit(0);
 		}
 		catch(Exception e) {
 			System.out.println("Something went wrong: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
-
 }
