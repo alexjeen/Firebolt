@@ -4,8 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * @author alex
- *
+ * @author Alex Jeensma
  */
 public class StylesheetSelector {
 	
@@ -70,9 +69,12 @@ public class StylesheetSelector {
 	 * 
 	 * @param property property of the CSS line 
 	 * @param value value of the CSS line
+	 * 
+	 * @return this stylesheetselector for chaining
 	 */
-	public void addProperty(String property, String value)
+	public StylesheetSelector addProperty(String property, String value)
 	{
 		properties.put(property, value);
+		return this;
 	}
 }

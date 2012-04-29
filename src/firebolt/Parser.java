@@ -23,7 +23,7 @@ public class Parser {
 	/**
 	 * The folder to the output
 	 */
-	private String output;
+	private static String output;
 	
 	/**
 	 * Holds the document
@@ -36,9 +36,17 @@ public class Parser {
 	 * @param path path to the psd file that adheres to the specification
 	 * @throws Exception 
 	 */
-	public Parser(String path, String output) throws Exception
+	public Parser(String path, String outputPath) throws Exception
 	{
 		psd_file = new File(path);
+		
+
+		// check for trailing slash
+		if(outputPath.charAt(outputPath.length() - 1) != '/') {
+			outputPath += "/";
+		}
+		
+		output = outputPath;		
 		
 		if(!psd_file.exists()) {
 			throw new Exception("Read error: File '" + path + "' doesn't exist!");
@@ -55,6 +63,9 @@ public class Parser {
 		// top element == <body>
 		body = recursiveParse(parsedPSD.getLayer(0), null);
 		document.setBody(body);	
+	
+		// reset body 
+		body.getSelector().addProperty("margin", "0px").addProperty("padding", "0px");
 		
 		// second element == configuration (optional)
 		if(parsedPSD.getLayersCount() > 1 && parsedPSD.getLayer(1).toString().equals("configuration")) {
@@ -66,13 +77,6 @@ public class Parser {
 		}
 		
 		body.recursiveBuildStyle();
-		
-		// check for trailing slash
-		if(output.charAt(output.length() - 1) != '/') {
-			output += "/";
-		}
-		
-		this.output = output;
 		
 		BufferedWriter html = new BufferedWriter(new FileWriter(output + "index.html"));
 		
@@ -103,7 +107,13 @@ public class Parser {
 			
 			e.addChild(c);	
 			
-			if(l.getType() == LayerType.FOLDER && cL.getType() == LayerType.NORMAL && cL.toString().equals(l.toString())) {
+			LayerMatcher lm1 = new LayerMatcher(l);
+			LayerMatcher lm2 = new LayerMatcher(cL);
+			
+			String dummy1ID = lm1.getID();
+			String dummy2ID = lm2.getID();
+			
+			if(l.getType() == LayerType.FOLDER && cL.getType() == LayerType.NORMAL && dummy1ID.equals(dummy2ID)) {
 				e.merge(c);
 			}
 			else {
@@ -153,45 +163,10 @@ public class Parser {
 	 */
 	private Element parseLayer(Layer layer) throws Exception
 	{
-		// match 1 = tagname
-		// match 2 = id
-		// match 3 = attributes
-		String layerRegex = "^(<[a-z^>]*>)?([a-z\\-\\_]*)?(\\[.*\\])?$";
-		String layerName = layer.toString();
-		
-		String tag = "";
-		String id = "";
-		HashMap<String,String> attributes = new HashMap<String,String>();
-		
-		Pattern p = Pattern.compile(layerRegex);
-		Matcher m = p.matcher(layerName);
-	
-		if(m.matches()) {
-			// get the tagname (if its there, otherwise default to div)
-			tag = m.group(1) != null ? m.group(1).substring(1, m.group(1).length() - 1) : "div";
-			// get the identification (if its there, otherwise leave it empty)
-			id = m.group(2) != null ? m.group(2) : "";
-			// check for attributes
-			if(m.group(3) != null) {
-				// has attributes
-				StringTokenizer st = new StringTokenizer(m.group(3).substring(1, m.group(3).length() - 1), ",");
-				StringTokenizer attr;
-				while(st.hasMoreTokens()) {
-					attr = new StringTokenizer(st.nextToken(), "=");
-					while(attr.hasMoreTokens()) {
-						String key = attr.nextToken();
-						String value = attr.nextToken();
-						attributes.put(key, value.substring(1, value.length() - 1));
-					}
-				}
-			}
-		}
-		else {
-			
-		}
-		
+		// parse
+		LayerMatcher lm = new LayerMatcher(layer);
 		// parsing done, create the Element
-		return new Element(tag, id, attributes, layer);
+		return new Element(lm.getTag(), lm.getID(), lm.getAttributes(), layer);
 	}
 	
 	/**
@@ -199,7 +174,7 @@ public class Parser {
 	 * 
 	 * @return the output folder including a trailing slash
 	 */
-	public String getOutput()
+	public static String getOutput()
 	{
 		return output;
 	}

@@ -3,96 +3,124 @@
 <head>
 	<title>Your Title</title>
 	<style type="text/css">
-	body {
-		padding-top: 100px;
-		background: rgb(0,0,0);
+	#wrapper {
+		margin: 0px;
+		padding: 0px;
 
 	}
 
-	#footer {
-		padding-top: 19px;
-		margin-right: auto;
-		height: 31px;
-		width: 800px;
-		background: rgb(0,0,255);
-		margin-left: auto;
-		margin-top: 25px;
+	body {
+		background: rgb(238,238,238);
 
 	}
 
 	#wrapper {
-		padding-top: 50px;
-		margin-right: auto;
-		height: 750px;
-		width: 800px;
-		background: rgb(128,128,128);
-		margin-left: auto;
+		height: 800px;
+		width: 860px;
+		background: rgb(238,238,238);
+
+	}
+
+	#contentWrapper {
+		height: 740px;
+		width: 860px;
+		background: rgb(255,255,255);
+
+	}
+
+	#left {
+		height: 720px;
+		width: 250px;
+		background: rgb(255,0,0);
 
 	}
 
 	#content {
-		margin-right: auto;
-		height: 425px;
-		width: 700px;
-		background: rgb(0,0,255);
-		margin-left: auto;
-		margin-top: 25px;
+		height: 722px;
+		width: 842px;
+		background: url('images/bg_content.png');
 
 	}
 
-	#menu {
+	#right {
+		height: 720px;
+		width: 589px;
+		background: rgb(255,0,0);
+		float: left;
+
+	}
+
+	#right {
+		background: none;
+
+	}
+
+	#rightTop {
 		margin-right: auto;
-		height: 50px;
-		width: 700px;
-		background: rgb(0,255,0);
+		height: 51px;
+		width: 589px;
+		background: url('images/bg_rightTop.png');
 		margin-left: auto;
-		margin-top: 25px;
+
+	}
+
+	#leftTop {
+		margin-right: 1px;
+		height: 51px;
+		width: 250px;
+		background: url('images/bg_leftTop.png');
+		margin-left: auto;
+		float: left;
+
+	}
+
+	#left {
+		background: none;
 
 	}
 
 	#header {
-		padding-top: 38px;
-		margin-right: auto;
-		height: 162px;
-		width: 700px;
-		background: rgb(255,0,0);
-		margin-left: auto;
+		padding-top: 19px;
+		height: 159px;
+		width: 860px;
+		background: url('images/bg_header.png');
 
 	}
 
-	#right-block {
-		height: 128px;
-		width: 359px;
-		background: rgb(0,0,0);
-		float: left;
-
-	}
-
-	#left-block {
-		margin-right: 21px;
-		height: 128px;
-		width: 259px;
-		background: rgb(0,0,0);
-		float: left;
+	#logo {
+		height: 145px;
+		width: 122px;
+		background: url('images/bg_logo.png');
+		margin-left: 20px;
 
 	}
 
 	</style>
 </head>
-<body>
-	<div id="wrapper"><!-- #wrapper -->
-		<div id="header"><!-- #header -->
-			<div id="left-block"><!-- #left-block -->
-			</div><!-- / #left-block -->
-			<div id="right-block"><!-- #right-block -->
-			</div><!-- / #right-block -->
-		</div><!-- / #header -->
-		<div id="menu"><!-- #menu -->
-		</div><!-- / #menu -->
-		<div id="content"><!-- #content -->
-		</div><!-- / #content -->
-	</div><!-- / #wrapper -->
-	<div id="footer"><!-- #footer -->
-			</div><!-- / #footer -->
-</body>
+<div id="wrapper">
+	<div id="header">
+		<div id="logo">
+		</div>
+	</div>
+	<div id="contentWrapper">
+		<div id="content">
+			<div id="left">
+				<div id="leftTop">
+									</div>
+				<div id="right">
+					<div id="rightTop">
+					</div>
+				</div>
+				<div id="content">
+				</div>
+			</div>
+			<div id="contentWrapper">
+			</div>
+		</div>
+		<div id="wrapper">
+		</div>
+	</div>
+	<body>
+	</body>
+</div>
 </html>

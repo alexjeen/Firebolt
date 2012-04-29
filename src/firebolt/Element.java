@@ -2,24 +2,36 @@ package firebolt;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.*;
 import java.util.Map.Entry;
+
+import javax.imageio.ImageIO;
+
 import psd.model.Layer;
 import psd.parser.layer.LayerType;
+
 import firebolt.css.Stylesheet;
 import firebolt.css.StylesheetSelector;
 import firebolt.metadata.MetadataParser;
+import firebolt.exceptions.*;
 
 /**
  * The Element class basically holds every HTML element
  * 
  * @author Alex Jeensma
  */
-public class Element {
+public class Element 
+{
 	/**
 	 * Holds the tag name
 	 */
 	private String tag;
+	
+	/**
+	 * Holds the so called void elements
+	 */
+	public final String[] void_elements = {"area","base","br","col","command","embed","hr","img","input","keygen","link","meta","param","source","track","wbr"};
 	
 	/**
 	 * Layer coupled with this Element
@@ -75,7 +87,7 @@ public class Element {
 	}
 	
 	/**
-	 * Recursive all the children + this node and build the style
+	 * Recur all the children + this node and build the style
 	 */
 	public void recursiveBuildStyle()
 	{
@@ -94,142 +106,190 @@ public class Element {
 	 */
 	public void buildStyle()
 	{
-		// get the image from the layer
-		BufferedImage bi = layer.getImage();
-		
-		// image dimensions
-		int layerWidth = bi.getWidth();
-		int layerHeight = bi.getHeight();
-		
-		/** 
-		 *	BACKGROUND OF THE ELEMENT 
-		 * 	- Solid color
-		 *  - Gradient
-		 *  - Image
-		 */
-		
-		// only handles solid colors atm
-		Color c = new Color(bi.getRGB(0, 0));
-		
-		css.addProperty("background", "rgb("+c.getRed()+","+c.getGreen()+","+c.getBlue()+")");
-		
-		/**
-		 * DIMENSIONS OF THE ELEMENT
-		 * - Width
-		 * - Height
-		 */
-		
-		if(!tag.equals("body")) {
-			css.addProperty("width", layerWidth + "px");
-			css.addProperty("height", layerHeight + "px");			
-		}
-		
-		/**
-		 * BOX MODEL OF THE ELEMENT
-		 * - Margin
-		 * - Padding
-		 * - Border
-		 */
-		if(hasParent() && parent.getLayer().getType() == LayerType.NORMAL) {
-			Layer p = parent.getLayer();
+		try
+		{
+			// get the image from the layer
+			BufferedImage bi = layer.getImage();
 			
-			// parent x position
-			int xp = p.getX();
-			// parent x position right
-			int xpr = p.getWidth() + xp;
-			// parent y position
-			int yp = p.getY();
-			// parent y position bottom
-			int ypb = p.getHeight() + yp;
-			
-			// x position
-			int x = layer.getX();
-			// x right position
-			int xr = layer.getWidth() + x;
-			// y position
-			int y = layer.getY();
-			// y bottom position
-			int yb = layer.getHeight() + y;
-			
-			// check for center align in this parent element
-			if((xr - xpr) == (xp - x)) {
-				css.addProperty("margin-left", "auto");
-				css.addProperty("margin-right", "auto");
+			if(bi == null) {
+				throw new ParseException("Could't get the image from the layer, is it named correctly?");
 			}
 			
-			// calculate next and previous in flow elements
-			Element nif = getNextInFlow();
-			Element pif = getPrevInFlow();
-
-			StylesheetSelector parentSelector = parent.getSelector();
+			// image dimensions
+			int layerWidth = bi.getWidth();
+			int layerHeight = bi.getHeight();
 			
-			if((y - yp) > 0 && pif == null) {
-				// @TODO: according to the box model, the height should decrease - padding
-				parentSelector.addProperty("padding-top", (y - yp) + "px");
-				if(parentSelector.getProperty("height") != null) {
-					int newHeight = Stylesheet.pixelsToInt(parentSelector.getProperty("height")) - (y - yp);
-					parentSelector.addProperty("height", newHeight + "px");
-				}
+			/** 
+			 *	BACKGROUND OF THE ELEMENT 
+			 * 	- Solid color
+			 *  - Gradient
+			 *  - Image
+			 */
+			
+			Set<Integer> colors = new HashSet<Integer>();
+			
+		    for(int y = 0; y < layerHeight; y++) 
+		    {
+		        for(int x = 0; x < layerWidth; x++) 
+		        {
+		            int pixel = bi.getRGB(x, y);     
+		            colors.add(pixel);
+		        }
+		    }			
+		    
+		    if(colors.size() == 1) {
+		    	// solid color
+				Color c = new Color(bi.getRGB(0, 0));
+				css.addProperty("background", "rgb("+c.getRed()+","+c.getGreen()+","+c.getBlue()+")");
+		    }
+		    else 
+		    {
+		    	// more than one color
+		    	
+		    	/** @TODO check for tileable.. */
+		    	
+		    	// write image to file and set reference
+		    	String imagePath = "images/bg_" + attributes.get("id")  + ".png";
+		    	
+		    	File file = new File(Parser.getOutput() + imagePath);
+		    	file.createNewFile();
+		    	
+		    	ImageIO.write(bi, "png", file);
+		    	
+		    	css.addProperty("background", "url('"+imagePath+"')");
+		    }
+			
+			/**
+			 * DIMENSIONS OF THE ELEMENT
+			 * - Width
+			 * - Height
+			 */
+		    
+			if(!tag.equals("body")) {
+				css.addProperty("width", layerWidth + "px");
+				css.addProperty("height", layerHeight + "px");			
 			}
 			
-			if(pif == null) {
-				// check for the left margin of this element (judging by it's parent)
+			/**
+			 * BOX MODEL OF THE ELEMENT
+			 * - Margin
+			 * - Padding
+			 * - Border
+			 */
+			if(hasParent() && parent.getLayer().getType() == LayerType.NORMAL) {
+				Layer p = parent.getLayer();
 				
-			}
-			
-			// check for margin top of this element
-			if(nif != null) {
-				Layer nifL = nif.getLayer();
-				if((nifL.getY() - yb) > 0) {
-					nif.getSelector().addProperty("margin-top", (nifL.getY() - yb) + "px");
+				// parent x position
+				int xp = p.getX();
+				// parent x position right
+				int xpr = p.getWidth() + xp;
+				// parent y position
+				int yp = p.getY();
+				// parent y position bottom
+				int ypb = p.getHeight() + yp;
+				
+				// x position
+				int x = layer.getX();
+				// x right position
+				int xr = layer.getWidth() + x;
+				// y position
+				int y = layer.getY();
+				// y bottom position
+				int yb = layer.getHeight() + y;
+				
+				// check for center align in this parent element
+				if((xr - xpr) == (xp - x)) {
+					css.addProperty("margin-left", "auto");
+					css.addProperty("margin-right", "auto");
 				}
-			}
-			
-			// calculate floats (http://www.w3schools.com/cssref/pr_class_float.asp)
-			// a float occurs when this element has a sibling are on the same "level"
-			if(nif != null || pif != null) {
-				if(nif != null)
-				{
-					int nif_x = nif.getLayer().getX();
-					
-					// get the ranges for the Y axis of the next in flow element..
-					int nif_y = nif.getLayer().getY();
-					
-					if(nif_y == y) {
-						// @TODO: more complex comparison for parallel Y elements..
-						css.addProperty("float", "left");
-						nif.getSelector().addProperty("float", "left");
-						
-						if((nif_x - xr) > 0) {
-							css.addProperty("margin-right", (nif_x - xr) + "px");
+				
+				// calculate next and previous in flow elements
+				Element nif = getNextInFlow();
+				Element pif = getPrevInFlow();
+
+				StylesheetSelector parentSelector = parent.getSelector();
+				
+				if((y - yp) > 0 && pif == null) {
+					// @TODO: according to the box model, the height should decrease - padding
+					parentSelector.addProperty("padding-top", (y - yp) + "px");
+					if(parentSelector.getProperty("height") != null) {
+						int newHeight = Stylesheet.pixelsToInt(parentSelector.getProperty("height")) - (y - yp);
+						parentSelector.addProperty("height", newHeight + "px");
+					}
+				}
+				
+				if(pif == null) {
+					// check for the left margin of this element (judging by it's parent)
+					int xDifference = x - xp;
+					if(xDifference > 0) {
+						if(css.getProperty("margin-left") != "auto") 
+						{
+							css.addProperty("margin-left", xDifference + "px");
 						}
 					}
 				}
-				if(pif != null)
+				
+				// check for margin top of this element
+				if(nif != null) {
+					Layer nifL = nif.getLayer();
+					if((nifL.getY() - yb) > 0) {
+						nif.getSelector().addProperty("margin-top", (nifL.getY() - yb) + "px");
+					}
+				}
+				
+				// calculate floats (http://www.w3schools.com/cssref/pr_class_float.asp)
+				// a float occurs when this element has a sibling are on the same "level"
+				if(nif != null || pif != null) {
+					if(nif != null)
+					{
+						int nif_x = nif.getLayer().getX();
+						
+						// get the ranges for the Y axis of the next in flow element..
+						int nif_y = nif.getLayer().getY();
+						
+						if(nif_y == y) {
+							// @TODO: more complex comparison for parallel Y elements..
+							css.addProperty("float", "left");
+							nif.getSelector().addProperty("float", "left");
+							
+							if((nif_x - xr) > 0) {
+								css.addProperty("margin-right", (nif_x - xr) + "px");
+							}
+						}
+					}
+					if(pif != null)
+					{
+						
+					}
+				}
+				
+			}
+		
+			for(Class<Heuristic> heur : Heuristic.getHeuristics())
+			{
+				try 
 				{
-					
+					Heuristic heuristic = heur.newInstance();
+					heuristic.changeElement(this);
+				} 
+				catch (InstantiationException e) 
+				{
+					System.out.println("Couldn't initiate Heuristic: " + e.getMessage());
+				} 
+				catch (IllegalAccessException e) 
+				{
+					System.out.println("Couldn't access Heuristic: " + e.getMessage());
 				}
 			}
-			
 		}
-	
-		for(Class<Heuristic> heur : Heuristic.getHeuristics())
+		catch(ParseException pe) 
 		{
-			try 
-			{
-				Heuristic heuristic = heur.newInstance();
-				heuristic.changeElement(this);
-			} 
-			catch (InstantiationException e) 
-			{
-				System.out.println("Couldn't initiate Heuristic: " + e.getMessage());
-			} 
-			catch (IllegalAccessException e) 
-			{
-				System.out.println("Couldn't access Heuristic: " + e.getMessage());
-			}
+			System.err.println(pe.getMessage());
 		}
-		
+		catch(Exception e)
+		{
+			System.err.println("Exception in buildStyle(): " + e.getMessage());
+		}
 	}
 	
 	/**
@@ -409,7 +469,13 @@ public class Element {
 			indentation += "\t";
 		}		
 		
-		HTML += indentation + "</"+tag+">"+buildAppend(appendLast)+"\n";
+		String end_tag = "";
+		
+		if(!Arrays.asList(void_elements).contains(tag)) {
+			end_tag = tag;
+		}
+		
+		HTML += indentation + "</"+end_tag+">"+buildAppend(appendLast)+"\n";
 		
 		return HTML;
 	}

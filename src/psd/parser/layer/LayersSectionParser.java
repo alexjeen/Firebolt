@@ -32,7 +32,6 @@ public class LayersSectionParser {
                 if (layersCount < 0) {
                     layersCount = -layersCount;
                 }
-
                 List<LayerParser> parsers = new ArrayList<LayerParser>(layersCount);
                 for (int i = 0; i < layersCount; i++) {
                     LayerParser layerParser = new LayerParser();

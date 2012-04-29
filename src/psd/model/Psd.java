@@ -78,6 +78,7 @@ public class Psd implements LayersContainer {
     private List<Layer> makeLayersHierarchy(List<Layer> layers) {
         LinkedList<LinkedList<Layer>> layersStack = new LinkedList<LinkedList<Layer>>();
         ArrayList<Layer> rootLayers = new ArrayList<Layer>();
+        
         for (Layer layer : layers) {
             switch (layer.getType()) {
             case HIDDEN: {
@@ -85,7 +86,10 @@ public class Psd implements LayersContainer {
                 break;
             }
             case FOLDER: {
-                assert !layersStack.isEmpty();
+                assert (layersStack.isEmpty() != true);
+                
+                /* meer dan 5 layers diep? nullpointer hiero */
+                
                 LinkedList<Layer> folderLayers = layersStack.removeFirst();
                 for (Layer l : folderLayers) {
                     layer.addLayer(l);
