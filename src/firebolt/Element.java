@@ -265,11 +265,11 @@ public class Element
 				
 			}
 		
-			for(Class<Heuristic> heur : Heuristic.getHeuristics())
+			for(Class<CommonPractice> heur : CommonPractice.getHeuristics())
 			{
 				try 
 				{
-					Heuristic heuristic = heur.newInstance();
+					CommonPractice heuristic = heur.newInstance();
 					heuristic.changeElement(this);
 				} 
 				catch (InstantiationException e) 

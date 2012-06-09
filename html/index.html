@@ -3,42 +3,40 @@
 <head>
 	<title>Your Title</title>
 	<style type="text/css">
-	#wrapper {
+	body {
+		background: rgb(238,238,238);
 		margin: 0px;
 		padding: 0px;
 
 	}
 
-	body {
-		background: rgb(238,238,238);
-
-	}
-
 	#wrapper {
+		margin-right: auto;
 		height: 800px;
 		width: 860px;
 		background: rgb(238,238,238);
+		margin-left: auto;
 
 	}
 
 	#contentWrapper {
-		height: 740px;
+		padding-top: 9px;
+		margin-right: auto;
+		height: 731px;
 		width: 860px;
 		background: rgb(255,255,255);
-
-	}
-
-	#left {
-		height: 720px;
-		width: 250px;
-		background: rgb(255,0,0);
+		margin-left: auto;
+		margin-top: 11px;
 
 	}
 
 	#content {
-		height: 722px;
+		padding-top: 1px;
+		margin-right: auto;
+		height: 721px;
 		width: 842px;
 		background: url('images/bg_content.png');
+		margin-left: auto;
 
 	}
 
@@ -55,21 +53,12 @@
 
 	}
 
-	#rightTop {
-		margin-right: auto;
-		height: 51px;
-		width: 589px;
-		background: url('images/bg_rightTop.png');
-		margin-left: auto;
-
-	}
-
-	#leftTop {
+	#left {
 		margin-right: 1px;
-		height: 51px;
+		height: 720px;
 		width: 250px;
-		background: url('images/bg_leftTop.png');
-		margin-left: auto;
+		background: rgb(255,0,0);
+		margin-left: 1px;
 		float: left;
 
 	}
@@ -81,9 +70,11 @@
 
 	#header {
 		padding-top: 19px;
+		margin-right: auto;
 		height: 159px;
 		width: 860px;
 		background: url('images/bg_header.png');
+		margin-left: auto;
 
 	}
 
@@ -97,30 +88,20 @@
 
 	</style>
 </head>
-<div id="wrapper">
-	<div id="header">
-		<div id="logo">
+<body>
+	<div id="wrapper">
+		<div id="header">
+			<div id="logo">
+			</div>
 		</div>
-	</div>
-	<div id="contentWrapper">
-		<div id="content">
-			<div id="left">
-				<div id="leftTop">
-									</div>
+		<div id="contentWrapper">
+			<div id="content">
+				<div id="left">
+				</div>
 				<div id="right">
-					<div id="rightTop">
-					</div>
-				</div>
-				<div id="content">
 				</div>
 			</div>
-			<div id="contentWrapper">
-			</div>
-		</div>
-		<div id="wrapper">
 		</div>
 	</div>
-	<body>
-	</body>
-</div>
+</body>
 </html>

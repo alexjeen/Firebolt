@@ -1,7 +1,8 @@
 package firebolt;
 
 import java.util.LinkedList;
-import firebolt.heuristics.*;
+
+import firebolt.commonpractices.*;
 
 /**
  * The Heuristic abstract class allows us to easily add some heuristics to our project
@@ -9,7 +10,7 @@ import firebolt.heuristics.*;
  * 
  * @author Alex Jeensma
  */
-public abstract class Heuristic {	
+public abstract class CommonPractice {	
 	/**
 	 * Changes a element based on the different properties by 
 	 * using a Heuristic..
@@ -25,16 +26,16 @@ public abstract class Heuristic {
 	 * @return A list of classes that implement this abstract Heuristic class
 	 */
 	@SuppressWarnings("unchecked")
-	public static LinkedList<Class<Heuristic>> getHeuristics()
+	public static LinkedList<Class<CommonPractice>> getHeuristics()
     {
-		String heuristics[] = {"TestHeuristic"};
-		LinkedList<Class<Heuristic>> classes = new LinkedList<Class<Heuristic>>();
+		String heuristics[] = {"TestCommonPractice"};
+		LinkedList<Class<CommonPractice>> classes = new LinkedList<Class<CommonPractice>>();
 			
 		try
 		{
 			for(int i = 0; heuristics.length > i; i++)
 			{
-				classes.add((Class<Heuristic>)Class.forName("firebolt.heuristics." + heuristics[i]));
+				classes.add((Class<CommonPractice>)Class.forName("firebolt.commonpractices." + heuristics[i]));
 			} 
 		}
 		catch(ClassNotFoundException cnfe)

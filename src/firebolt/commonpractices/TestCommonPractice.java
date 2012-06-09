@@ -1,12 +1,12 @@
-package firebolt.heuristics;
+package firebolt.commonpractices;
 
 import firebolt.*;
 
 /**
- * This Heuristic does nothing
+ * This Common Practice does nothing
  * @author Alex Jeensma
  */
-public class TestHeuristic extends Heuristic {
+public class TestCommonPractice extends CommonPractice {
 	/**
 	 * As said before, does absolutely nothing..
 	 */

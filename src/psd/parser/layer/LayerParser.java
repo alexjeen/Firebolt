@@ -36,6 +36,7 @@ public class LayerParser {
         parseChannelsInfo(stream);
 
         String tag = stream.readString(4);
+        
         if (!tag.equals("8BIM")) {
             throw new IOException("format error");
         }
@@ -222,6 +223,7 @@ public class LayerParser {
             }
         }
         String name = new String(str, 0, strSize, "ISO-8859-1");
+        
         if (handler != null) {
             handler.nameLoaded(name);
         }

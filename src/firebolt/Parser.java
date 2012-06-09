@@ -103,21 +103,26 @@ public class Parser {
 		{
 			// traverse children
 			Layer cL = l.getLayer(x);
-			Element c = recursiveParse(cL, e);
 			
-			e.addChild(c);	
-			
-			LayerMatcher lm1 = new LayerMatcher(l);
-			LayerMatcher lm2 = new LayerMatcher(cL);
-			
-			String dummy1ID = lm1.getID();
-			String dummy2ID = lm2.getID();
-			
-			if(l.getType() == LayerType.FOLDER && cL.getType() == LayerType.NORMAL && dummy1ID.equals(dummy2ID)) {
-				e.merge(c);
-			}
-			else {
-				children.add(c);
+			// ignore layer groups (nesting prob)
+			if(!cL.toString().equals("</Layer group>"))
+			{
+				Element c = recursiveParse(cL, e);
+				
+				e.addChild(c);	
+				
+				LayerMatcher lm1 = new LayerMatcher(l);
+				LayerMatcher lm2 = new LayerMatcher(cL);
+				
+				String dummy1ID = lm1.getID();
+				String dummy2ID = lm2.getID();
+				
+				if(l.getType() == LayerType.FOLDER && cL.getType() == LayerType.NORMAL && dummy1ID.equals(dummy2ID)) {
+					e.merge(c);
+				}
+				else {
+					children.add(c);
+				}
 			}
 		}	
 		

@@ -89,10 +89,13 @@ public class Psd implements LayersContainer {
                 assert (layersStack.isEmpty() != true);
                 
                 /* meer dan 5 layers diep? nullpointer hiero */
-                
-                LinkedList<Layer> folderLayers = layersStack.removeFirst();
-                for (Layer l : folderLayers) {
-                    layer.addLayer(l);
+                if(!layersStack.isEmpty())
+                {
+
+                    LinkedList<Layer> folderLayers = layersStack.removeFirst();
+                    for (Layer l : folderLayers) {
+                        layer.addLayer(l);
+                    }                	
                 }
             }
                 // break isn't needed
